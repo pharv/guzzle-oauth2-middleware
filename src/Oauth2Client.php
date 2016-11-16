@@ -57,6 +57,8 @@ class Oauth2Client extends Client
             if ($this->getConfig('auth') == 'oauth2') {
                 if ($this->grantType instanceof JwtBearer && ($config = $this->grantType->getConfig()) && isset($config['jwt_payload']['jti'])) {
                     $this->accessToken = null; // TODO: allow middleware to be configured to generate a unique jti claim on each request
+                    $config['jwt_payload']['jti'] = sha1(uniqid());
+                    $this->grantType->setConfig('jwt_payload', $config['jwt_payload']);
                 }
                 $token = $this->getAccessToken();
 
