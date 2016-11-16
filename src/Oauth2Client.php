@@ -6,6 +6,7 @@ use Exception;
 use Frankkessler\Guzzle\Oauth2\Exceptions\InvalidGrantException;
 use Frankkessler\Guzzle\Oauth2\GrantType\GrantTypeBase;
 use Frankkessler\Guzzle\Oauth2\GrantType\GrantTypeInterface;
+use Frankkessler\Guzzle\Oauth2\GrantType\JwtBearer;
 use Frankkessler\Guzzle\Oauth2\GrantType\RefreshTokenGrantTypeInterface;
 use Frankkessler\Guzzle\Oauth2\Middleware\RetryModifyRequestMiddleware;
 use GuzzleHttp\Client;
@@ -54,6 +55,9 @@ class Oauth2Client extends Client
         //Add the Authorization header to requests.
         $handler->push(Middleware::mapRequest(function (RequestInterface $request) {
             if ($this->getConfig('auth') == 'oauth2') {
+                if ($this->grantType instanceof JwtBearer && ($config = $this->grantType->getConfig()) && isset($config['jwt_payload']['jti'])) {
+                    $this->accessToken = null; // TODO: allow middleware to be configured to generate a unique jti claim on each request
+                }
                 $token = $this->getAccessToken();
 
                 if ($token !== null) {
